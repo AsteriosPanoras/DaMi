@@ -131,7 +131,6 @@ Once you have selected a model, you need to change two things:
 - In your local code, change the `OLLAMA_MODEL` environment variable in `.env` to the match the model you have used. If your UI is running, you will need to restart it (Ctrl + C and then `uv run streamlit run ui/chat_interface.py`). 
 
 
-
 ### Ask a question about the assignment
 This README should cover everything you need in order to successfully complete the assignment. However, if you find any blockers, please follow the steps below in order:
 1. Search again this documentation. Make sure you have completed all prerequisites. Make sure your question cannot be answered based on what is written here.
@@ -152,8 +151,6 @@ This section is optional. However, we strongly encourage you to go through it, i
 
 - **What is DaMi actually?** _Answer_: DaMi is actually three distinct components working together: an MCP server with tools (DaMi's hands), an LLM (DaMi's brain), and a web application in Streamlit (DaMi's front door). The MCP server defines the tools and the way they are visible to DaMi. The LLM uses these tools and its reasoning capabilities to answer your prompts. The web application just creates a beautiful chat interface between you and the LLM. Learn more: [MCP](https://modelcontextprotocol.github.io/python-sdk/) | [Streamlit](https://streamlit.io/)
 
-- **What happens every time I run the Kaggle notebook?** _or else_ **Where is the LLM?** _Answer_: **PENDING** Learn more: [Ollama](https://docs.ollama.com/)
+- **What happens every time I run the Kaggle notebook?** _or else_ **Where is the LLM?** _Answer_: Every time you run a notebook on Kaggle, a new session is created somewhere in the cloud. In other words, a machine owned by Kaggle, which is located somewhere in the world, creates a new Python session and runs your code. The code in the provided Kaggle notebook sets up an Ollama server: a server that downloads and hosts LLMs on that machine. Once downloaded, these LLMs can be used for inference as we do in the 5th cell of the notebook. In our case, we download the [gpt-oss](https://ollama.com/library/gpt-oss) model. We then use NGROK to create a tunnel between the server that runs somewhere in the cloud and a URL address (the one you need to update in the `.env`). So, every time you hit this address with a prompt, this is redirected to the Kaggle machine's IP and the result is returned. All in all, the LLM lives and runs on a cloud machine provided by Kaggle. We access it through an NGROK tunnel. Learn more: [Ollama](https://docs.ollama.com/) | [NGROK](https://ngrok.com/docs/what-is-ngrok)
 
-- **What happens every time I send a message to DaMi?** **PENDING**
-
-
+- **What happens every time I send a message to DaMi?** _Answer:_ When you click "Send" in your web browser, a new message of type `Human` is appended to the conversation history. We use the `langchain` python package to connect the LLM (running somewhere on Kaggle), the tools (running locally in your machine) and your prompts (generated through the UI that runs in your machine). We send the whole conversation history (i.e., the system prompt, plus all the messages so far, plus your last message) to the LLM through the NGROK tunnel. When the response is returned back to us from the LLM, we show it in the web application as a next message of type `AI`.  Learn more: [LangChain Agents](https://docs.langchain.com/oss/python/langchain/agents) | [LangChain MCP Adapters](https://github.com/langchain-ai/langchain-mcp-adapters)
