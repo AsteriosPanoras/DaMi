@@ -1,11 +1,11 @@
 import os
+import shutil
 from typing import Any, Dict
 from datetime import datetime
 import pandas as pd
 
 
 from environment import DATA_DIR, PLOTS_DIR, DATABASE_TABLES
-from tools.data_loading.data_loading_utils import _generate_synthetic_data
 
 
 def register_data_loading_tools(mcp):
@@ -61,13 +61,27 @@ def register_data_loading_tools(mcp):
             tables_info = []
 
             for table_name, info in DATABASE_TABLES.items():
+                # Check if dataset file exists
+                source_file = f"data/{table_name}.csv"
+                dataset_exists = os.path.exists(source_file)
+
+                # Get row count from the actual dataset if it exists
+                estimated_rows = "Unknown"
+                if dataset_exists:
+                    try:
+                        df = pd.read_csv(source_file)
+                        estimated_rows = len(df)
+                    except Exception:
+                        estimated_rows = "Error reading file"
+
                 tables_info.append(
                     {
                         "table_name": table_name,
                         "description": info["description"],
                         "columns": info["columns"],
-                        "estimated_rows": f"{info['sample_size_range'][0]}-{info['sample_size_range'][1]}",
+                        "estimated_rows": estimated_rows,
                         "cluster_potential": info["cluster_characteristics"],
+                        "dataset_available": dataset_exists,
                     }
                 )
 
@@ -83,16 +97,16 @@ def register_data_loading_tools(mcp):
             return {"error": f"Failed to list database tables: {str(e)}"}
 
     @mcp.tool()
-    def fetch_table_data(table_name: str, limit: int, file_path: str) -> Dict[str, Any]:
+    def fetch_table_data(table_name: str, file_path: str) -> Dict[str, Any]:
         """
         Fetch data from a specified database table and save to a csv file.
+        This copies the pre-generated dataset from the data folder to the specified location.
 
         IMPORTANT: Provide an ABSOLUTE path for file_path parameter.
         Use the get_workspace_paths() tool first to get the correct data directory path.
 
         Args:
             table_name: Name of the database table to fetch
-            limit: The number of rows to fetch
             file_path: ABSOLUTE path where to save the data in CSV format (e.g., /full/path/to/data.csv)
 
         Returns:
@@ -104,17 +118,14 @@ def register_data_loading_tools(mcp):
                     "error": f"Table '{table_name}' not found. See available tables using the `list_database_tables` tool."
                 }
 
+            # Check if source dataset exists
+            source_file = f"data/{table_name}.csv"
+            if not os.path.exists(source_file):
+                return {
+                    "error": f"Dataset file not found: {source_file}. Please run scripts/generate_datasets.py first."
+                }
+
             table_info = DATABASE_TABLES[table_name]
-
-            # Execute database query
-            min_size, max_size = table_info["sample_size_range"]
-            n_samples = min(limit, max_size)
-
-            # Fetch data from database table
-            data = _generate_synthetic_data(table_name, n_samples)
-
-            # Create DataFrame with metadata
-            df = pd.DataFrame(data, columns=["x", "y"])
 
             # Ensure data directory exists
             abs_data_dir = os.path.abspath(DATA_DIR)
@@ -133,23 +144,11 @@ def register_data_loading_tools(mcp):
                 if not file_path.endswith(".csv"):
                     file_path += ".csv"
 
-            # Save to CSV file
-            df.to_csv(file_path, index=False)
+            # Copy the dataset from data/ to the target location
+            shutil.copy2(source_file, file_path)
 
-            # Save metadata separately as a comment file
-            metadata_file = file_path.replace(".csv", "_metadata.txt")
-            with open(metadata_file, "w") as f:
-                f.write(f"Table: {table_name}\n")
-                f.write(f"Description: {table_info['description']}\n")
-                f.write(f"Columns: {', '.join(table_info['columns'])}\n")
-                f.write(f"Fetched at: {datetime.now().isoformat()}\n")
-                f.write(f"Query limit: {limit}\n")
-                f.write(
-                    f"Cluster characteristics: {table_info['cluster_characteristics']}\n"
-                )
-                f.write(f"Rows: {len(data)}\n")
-                f.write(f"X range: [{data[:, 0].min():.2f}, {data[:, 0].max():.2f}]\n")
-                f.write(f"Y range: [{data[:, 1].min():.2f}, {data[:, 1].max():.2f}]\n")
+            # Read the dataset to get info
+            df = pd.read_csv(file_path)
 
             # Get file size
             file_size = os.path.getsize(file_path)
@@ -157,15 +156,14 @@ def register_data_loading_tools(mcp):
             return {
                 "success": True,
                 "table_name": table_name,
-                "query_executed": f"SELECT * FROM {table_name}"
-                + (f" LIMIT {limit}" if limit else ""),
-                "rows_fetched": len(data),
+                "query_executed": f"SELECT * FROM {table_name}",
+                "rows_fetched": len(df),
                 "file_path": os.path.abspath(file_path),
                 "file_size_bytes": file_size,
                 "columns": table_info["columns"],
                 "description": table_info["description"],
                 "cluster_potential": table_info["cluster_characteristics"],
-                "message": f"Fetched {len(data)} rows from {table_name} table and saved to {file_path}",
+                "message": f"Fetched {len(df)} rows from {table_name} table and saved to {file_path}",
             }
         except Exception as e:
             return {"error": f"Failed to fetch table data: {str(e)}"}
@@ -175,8 +173,8 @@ def register_data_loading_tools(mcp):
         """
         Get detailed information about a specific database table.
 
-        This tool simulates querying database metadata for a specific table.
-        In production, this would query information_schema or similar system tables.
+        This tool provides metadata for a specific table including description,
+        columns, and cluster characteristics.
 
         Args:
             table_name: Name of the database table to inspect
@@ -193,15 +191,29 @@ def register_data_loading_tools(mcp):
 
             table_info = DATABASE_TABLES[table_name]
 
+            # Get actual row count from the dataset if it exists
+            source_file = f"data/{table_name}.csv"
+            actual_rows = "Unknown"
+            dataset_available = False
+
+            if os.path.exists(source_file):
+                dataset_available = True
+                try:
+                    df = pd.read_csv(source_file)
+                    actual_rows = len(df)
+                except Exception:
+                    actual_rows = "Error reading file"
+
             return {
                 "success": True,
                 "table_name": table_name,
                 "description": table_info["description"],
                 "columns": table_info["columns"],
                 "column_count": len(table_info["columns"]),
-                "estimated_row_range": table_info["sample_size_range"],
+                "actual_rows": actual_rows,
                 "cluster_characteristics": table_info["cluster_characteristics"],
                 "data_types": "Numeric",
+                "dataset_available": dataset_available,
             }
         except Exception as e:
             return {"error": f"Failed to get table info: {str(e)}"}
@@ -233,16 +245,6 @@ def register_data_loading_tools(mcp):
                         if 'x' in df.columns and 'y' in df.columns:
                             file_size = os.path.getsize(file_path)
                             file_modified = datetime.fromtimestamp(os.path.getmtime(file_path)).isoformat()
-                            
-                            # Try to get dataset name from metadata file
-                            metadata_file = file_path.replace('.csv', '_metadata.txt')
-                            dataset_name = "Unknown"
-                            if os.path.exists(metadata_file):
-                                with open(metadata_file, 'r') as f:
-                                    for line in f:
-                                        if line.startswith('Dataset:') or line.startswith('Table:'):
-                                            dataset_name = line.split(':', 1)[1].strip()
-                                            break
                             
                             dataset_files.append({
                                 "filename": filename,

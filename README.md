@@ -86,7 +86,23 @@ The system prompt is defined in the `src/agent/system_prompt.py`. Feel free to e
 **Note:** You do NOT need to restart the Kaggle notebook when changing the system prompt - only restart the local Streamlit interface.
 
 ### Add a dataset
-**PENDING**
+All datasets that DaMi can access are located in the `data/` directory as CSV files with two columns: `x` and `y`. Each dataset represents a simulated database table. To add a new dataset:
+
+1. **Create the CSV file:** Place a CSV file named `<your_table_name>.csv` in the `data/` directory with `x` and `y` columns:
+   ```csv
+   x,y
+   1.23,4.56
+   7.89,0.12
+   ```
+
+2. **Register the dataset:** Edit `src/environment/utils.py` and add an entry to the `DATABASE_TABLES` dictionary (this makes the dataset discoverable by DaMi through the `list_database_tables()` and `fetch_table_data()` tools):
+   ```python
+   "your_table_name": {
+       "description": "Brief description of what the dataset represents",
+       "columns": ["feature1 (x)", "feature2 (y)"],
+       "cluster_characteristics": "Description of clustering patterns in the data",
+   }
+   ```
 
 ### Add a tool
 All tools that DaMi has access to are placed in the `src/tools/` directory of the project. They are further organized into sub-directories based on their domain. For example, the tools for clustering can be found inside the `src/tools/clustering/` directory. To add a new tool, see how existing tools are defined and create yours!
