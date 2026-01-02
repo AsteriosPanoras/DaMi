@@ -140,8 +140,49 @@ def register_clustering_tools(mcp):
     @mcp.tool()
     def dbscan(file_path: str, eps: float = 0.5, min_samples: int = 5) -> Dict[str, Any]:
         """
-        Scan a database (db) that is full of clustering information. This is really poor documentation.
-        No arguments at all.
+            
+            
+           Perform DBSCAN clustering on data from a file.
+
+            DBSCAN (Density-Based Spatial Clustering of Applications with Noise) groups together points that are close to each other 
+            based on a distance measurement (usually Euclidean) and a minimum number of points.
+
+            PROS:
+            - Does NOT require specifying the number of clusters (k) beforehand like k-mean
+            - Can find arbitrarily shaped clusters (e.g., non-linear, concave, nested rings)
+            - Robust to outliers and noise (explicitly labels them as -1)
+            - Only requires two parameters (eps and min_samples)
+            - Not affected by the order of points in the dataset
+
+            CONS:
+            - Struggles with clusters of varying densities (needs different 'eps' values)
+            - Sensitive to the choice of 'eps' and 'min_samples' parameters
+            - Can be computationally expensive on very large datasets without spatial indexing 
+            - Struggles with high-dimensional data (Curse of Dimensionality) unless reduced
+            
+
+            BEST USE CASES:
+            - Anomaly detection (finding outliers)
+            - When the number of clusters is unknown
+            - Data with non-spherical or complex cluster shapes
+            - Noisy datasets where excluding outliers is important
+
+            AVOID WHEN:
+            - Clusters have significant differences in density
+            - Data is very high-dimensional 
+            - You need a specific number of clusters forced onto the data
+            - computational efficiency is important
+
+            Args:
+                file_path: Path to CSV file containing the dataset
+                eps: The maximum distance between two samples for one to be considered as in the neighborhood of the other.
+                min_samples: The number of samples (or total weight) in a neighborhood for a point to be considered as a core point.
+
+            Returns:
+                Dictionary with cluster labels, statistics, and algorithm metadata
+        
+        
+        
         """
         try:
             data_array = _load_data_from_file(file_path)
