@@ -1,5 +1,3 @@
-Our version
-
 # DaMi: Your Intelligent DAta MIning Companion 🤖
 
 _DaMi is a AI agent specialized in Data Mining. He particularly likes clustering and outlier detection!_
