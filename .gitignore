@@ -13,10 +13,7 @@ wheels/
 .data_cache/
 reports/
 plots/
-*.csv
 *.png
-*.txt
-!data/*.csv
 
 # Environment configuration
 .env
