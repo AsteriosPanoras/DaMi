@@ -1,0 +1,21 @@
+Algorithm: Density-Based Two-Stage Outlier Detection
+Source file: C:\Programming\Εργασία Αποθήκες-Εξόρυξη Δεδομένων\LLM\DaMi\data\synthetic_datasets\synth_diagonal\data.txt
+Processing time: 0.7797 seconds
+Initial rows: 1000
+After cleaning: 1000
+Duplicates removed: 0
+Micro-clusters: 200
+Macro-clusters: 5
+Dynamic min micro size: 3
+Fixed sigma: 3.5
+Outliers detected: 55 (5.50%)
+False positives prevented: 9
+
+Cluster Statistics:
+ID    Count    SafetyRadius    Outliers  
+--------------------------------------------------
+0     188      0.6331          11        
+1     244      0.6759          14        
+2     225      0.7123          11        
+3     200      0.7154          18        
+4     143      0.5256          1         
