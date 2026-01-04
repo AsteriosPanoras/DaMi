@@ -102,11 +102,11 @@ def register_clustering_tools(mcp):
                 'algorithm': 'K-means'
             })
             
-            results_df.to_csv(results_file, index=False)
-            
+            results_df.to_csv(results_file, index=False, encoding='utf-8')
+
             # Save metadata separately
             metadata_file = results_file.replace('.csv', '_metadata.txt')
-            with open(metadata_file, 'w') as f:
+            with open(metadata_file, 'w', encoding='utf-8') as f:
                 f.write(f"Algorithm: K-means\n")
                 f.write(f"Source file: {file_path}\n")
                 f.write(f"Number of clusters: {n_clusters}\n")
@@ -231,11 +231,11 @@ def register_clustering_tools(mcp):
                 'algorithm': 'DBSCAN'
             })
             
-            results_df.to_csv(results_file, index=False)
-            
+            results_df.to_csv(results_file, index=False, encoding='utf-8')
+
             # Save metadata separately
             metadata_file = results_file.replace('.csv', '_metadata.txt')
-            with open(metadata_file, 'w') as f:
+            with open(metadata_file, 'w', encoding='utf-8') as f:
                 f.write(f"Algorithm: DBSCAN\n")
                 f.write(f"Source file: {file_path}\n")
                 f.write(f"Number of clusters: {n_clusters}\n")
@@ -356,11 +356,11 @@ def register_clustering_tools(mcp):
                 'algorithm': 'Hierarchical-Single-Linkage'
             })
 
-            results_df.to_csv(results_file, index=False)
+            results_df.to_csv(results_file, index=False, encoding='utf-8')
 
             # Save metadata
             metadata_file = results_file.replace('.csv', '_metadata.txt')
-            with open(metadata_file, 'w') as f:
+            with open(metadata_file, 'w', encoding='utf-8') as f:
                 f.write(f"Algorithm: Hierarchical Clustering (Single Linkage / MIN)\n")
                 f.write(f"Type: Agglomerative (Bottom-up)\n")
                 f.write(f"Linkage Method: Single (Minimum distance between clusters)\n")
@@ -481,11 +481,11 @@ def register_clustering_tools(mcp):
                 'algorithm': 'Hierarchical-Complete-Linkage'
             })
 
-            results_df.to_csv(results_file, index=False)
+            results_df.to_csv(results_file, index=False, encoding='utf-8')
 
             # Save metadata
             metadata_file = results_file.replace('.csv', '_metadata.txt')
-            with open(metadata_file, 'w') as f:
+            with open(metadata_file, 'w', encoding='utf-8') as f:
                 f.write(f"Algorithm: Hierarchical Clustering (Complete Linkage / MAX)\n")
                 f.write(f"Type: Agglomerative (Bottom-up)\n")
                 f.write(f"Linkage Method: Complete (Maximum distance between clusters)\n")
@@ -606,11 +606,11 @@ def register_clustering_tools(mcp):
                 'algorithm': 'Hierarchical-Average-Linkage'
             })
 
-            results_df.to_csv(results_file, index=False)
+            results_df.to_csv(results_file, index=False, encoding='utf-8')
 
             # Save metadata
             metadata_file = results_file.replace('.csv', '_metadata.txt')
-            with open(metadata_file, 'w') as f:
+            with open(metadata_file, 'w', encoding='utf-8') as f:
                 f.write(f"Algorithm: Hierarchical Clustering (Average Linkage / UPGMA)\n")
                 f.write(f"Type: Agglomerative (Bottom-up)\n")
                 f.write(f"Linkage Method: Average (Mean of all pairwise distances)\n")
@@ -734,11 +734,11 @@ def register_clustering_tools(mcp):
                 'algorithm': 'Hierarchical-Ward'
             })
 
-            results_df.to_csv(results_file, index=False)
+            results_df.to_csv(results_file, index=False, encoding='utf-8')
 
             # Save metadata
             metadata_file = results_file.replace('.csv', '_metadata.txt')
-            with open(metadata_file, 'w') as f:
+            with open(metadata_file, 'w', encoding='utf-8') as f:
                 f.write(f"Algorithm: Hierarchical Clustering (Ward's method)\n")
                 f.write(f"Type: Agglomerative (Bottom-up)\n")
                 f.write(f"Linkage Method: Ward (Minimum Variance)\n")

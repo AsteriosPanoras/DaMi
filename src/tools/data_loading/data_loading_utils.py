@@ -12,21 +12,37 @@ import numpy as np
 
 def _load_data_from_file(file_path: str) -> np.ndarray:
     """
-    Load dataset from a CSV file.
+    Load dataset from a CSV or TXT file.
 
     Args:
-        file_path: Path to the CSV file
+        file_path: Path to the CSV or TXT file
 
     Returns:
         numpy array with shape (n_samples, 2) containing x and y coordinates
 
     Raises:
         FileNotFoundError: If file doesn't exist
-        ValueError: If file doesn't have required x, y columns
+        ValueError: If file doesn't have required x, y columns or correct format
     """
-    df = pd.read_csv(file_path)
+    # Try loading with headers first
+    try:
+        df = pd.read_csv(file_path, sep=',', on_bad_lines='skip', engine='python')
 
-    if 'x' not in df.columns or 'y' not in df.columns:
-        raise ValueError(f"CSV file must contain 'x' and 'y' columns. Found: {df.columns.tolist()}")
+        # Check if it has x,y columns
+        if 'x' in df.columns and 'y' in df.columns:
+            return df[['x', 'y']].to_numpy()
+    except:
+        pass
 
-    return df[['x', 'y']].to_numpy()
+    # Try loading without headers (assumes first column = x, second = y)
+    try:
+        df = pd.read_csv(file_path, sep=',', header=None, on_bad_lines='skip', engine='python')
+
+        # Must have at least 2 columns
+        if df.shape[1] < 2:
+            raise ValueError(f"File must have at least 2 columns. Found: {df.shape[1]}")
+
+        # Use first two columns as x, y
+        return df.iloc[:, :2].to_numpy()
+    except Exception as e:
+        raise ValueError(f"Could not load file {file_path}. Error: {str(e)}")

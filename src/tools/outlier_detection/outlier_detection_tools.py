@@ -90,12 +90,12 @@ def register_outlier_detection_tools(mcp):
 
         Args:
             file_path: Path to CSV file containing the 2D dataset
-            n_micro: Number of micro-clusters for stage 1 (default: 100)
+            n_micro: Number of micro-clusters for stage 1 (default: 200)
             n_macro: Number of final macro-clusters (default: 5, per exercise)
             percentile: Percentile for adaptive radius calculation (default: 90)
             min_radius: Minimum safety radius for any cluster (default: 0.5)
             max_radius: Maximum safety radius for any cluster (default: 5.0)
-            fixed_sigma: Sigma multiplier for outlier threshold (default: 2.0)
+            fixed_sigma: Sigma multiplier for outlier threshold (default: 3.5)
 
         Returns:
             Dictionary with outlier detection results, statistics, and file paths
@@ -125,8 +125,14 @@ def register_outlier_detection_tools(mcp):
             df_clean['x'] = pd.to_numeric(df_clean['x'], errors='coerce')
             df_clean['y'] = pd.to_numeric(df_clean['y'], errors='coerce')
 
-            # Handle infinite values
-            df_clean.replace([np.inf, -np.inf], np.nan, inplace=True)
+            # Handle infinite values (with same logic as standalone script)
+            try:
+                temp_vals = df_clean[['x', 'y']].astype(float)
+                num_inf = np.isinf(temp_vals).values.sum()
+                if num_inf > 0:
+                    df_clean.replace([np.inf, -np.inf], np.nan, inplace=True)
+            except:
+                df_clean.replace([np.inf, -np.inf], np.nan, inplace=True)
 
             # Drop NaN
             df_clean.dropna(inplace=True)
@@ -278,7 +284,7 @@ def register_outlier_detection_tools(mcp):
             outliers_df = df_raw.iloc[orig_indices]
 
             outliers_file = os.path.join(output_dir, f"{dataset_name}_outliers.csv")
-            outliers_df.to_csv(outliers_file, index=False, header=False)
+            outliers_df.to_csv(outliers_file, index=False, header=False, encoding='utf-8')
 
             # Save full results
             results_file = os.path.join(output_dir, f"{dataset_name}_results.csv")
@@ -293,7 +299,7 @@ def register_outlier_detection_tools(mcp):
                 'source_file': file_path,
                 'algorithm': 'Density-Based Two-Stage'
             })
-            results_df.to_csv(results_file, index=False)
+            results_df.to_csv(results_file, index=False, encoding='utf-8')
 
             # Generate visualizations
             _generate_outlier_plots(
@@ -303,7 +309,7 @@ def register_outlier_detection_tools(mcp):
 
             # Create metadata
             metadata_file = os.path.join(output_dir, f"{dataset_name}_metadata.txt")
-            with open(metadata_file, 'w') as f:
+            with open(metadata_file, 'w', encoding='utf-8') as f:
                 f.write(f"Algorithm: Density-Based Two-Stage Outlier Detection\n")
                 f.write(f"Source file: {file_path}\n")
                 f.write(f"Processing time: {end_time - start_time:.4f} seconds\n")
@@ -404,8 +410,8 @@ def _generate_outlier_plots(analysis_df, centers, df_raw, df_clean, dataset_name
     inliers_x = pd.to_numeric(df_raw.loc[inlier_mask, 'x'], errors='coerce')
     inliers_y = pd.to_numeric(df_raw.loc[inlier_mask, 'y'], errors='coerce')
 
-    outliers_x = pd.to_numeric(df_raw.iloc[orig_indices, 'x'], errors='coerce')
-    outliers_y = pd.to_numeric(df_raw.iloc[orig_indices, 'y'], errors='coerce')
+    outliers_x = pd.to_numeric(df_raw.loc[orig_indices, 'x'], errors='coerce')
+    outliers_y = pd.to_numeric(df_raw.loc[orig_indices, 'y'], errors='coerce')
 
     plt.scatter(inliers_x, inliers_y, c='blue', s=20, alpha=0.6, label='Inliers')
 
